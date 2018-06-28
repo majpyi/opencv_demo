@@ -142,8 +142,8 @@ print("mean_sum_rows:  " +  str(tag_row))
 
 
 tag_rows=[0 for n in range(rows)]
-index1 = (int)(rows/15)
-index2 = (int)(rows*(14/15))
+index1 = (int)(rows/12)
+index2 = (int)(rows*(11/12))
 for i in range(index1,index2):
     if(sum_rows[i]>tag_row-20):
         tag_rows[i]=1
@@ -341,7 +341,7 @@ for i in range(0,len(list_start)):
         # cv2.imwrite("/Users/Quantum/Desktop/"+str(i)+".jpg", gray[range(row_start,row_end+1),range(list1[i-1],list1[i]+1)] )
         # cv2.imwrite("/Users/Quantum/Desktop/"+str(list1[i]+1)+".jpg", gray[:,range(list1[i-1],list1[i]+1)][range(row_start,row_end+1),:] )
         cut_colums.append(list_start[i])
-        cut_colums.append(list_end[i]+1)
+        cut_colums.append(list_end[i])
         # cv2.imwrite("/Users/Quantum/Desktop/" + str(list_start[i] )+":"+str(list_end[i]) + ".jpg",
         #             image[:, range(list_start[i], list_end[i] + 1)][range(row_start + 3, row_end + 1 - 3), :])
 
@@ -356,7 +356,7 @@ for i in range(0,len(list_start)):
     elif(list_end[i]-list_start[i]<0):
         if(i>=1 and list_end[i]-list_start[i-1]>colums/50):
             cut_colums.append(list_start[i-1])
-            cut_colums.append(list_end[i] + 1)
+            cut_colums.append(list_end[i])
             # cv2.imwrite("/Users/Quantum/Desktop/" + str(list_start[i-1]) + ":" + str(list_end[i]) + ".jpg",
             #         image[:, range(list_start[i-1], list_end[i] + 1)][range(row_start + 3, row_end + 1 - 3), :])
 
@@ -386,7 +386,72 @@ print(tag)
 #     for i in range(1,tag)):
 cut_colums = cut_colums[:1]+cut_colums[tag:]
 
-print(cut_colums)
+print("切割坐标 :"+str(cut_colums))
+
+cut_length = []
+for i in range(1,len(cut_colums),2):
+    cut_length.append(cut_colums[i]-cut_colums[i-1])
+print("切割长度坐标: "+str(cut_length))
+
+copy = cut_length.copy()
+copy.sort()
+median_length = copy[(int)(len(cut_length)/2)]
+# print(copy)
+print("切割长度的中位数值: "+str(median_length))
+if (median_length ==0):
+    median_length = colums/8
+
+cut_again_start = []
+cut_again_end = []
+cut_again_num =[]
+for  i in range(0,len(cut_length)):
+    cut_num = (cut_length[i] / (median_length * 3 / 4))
+    if(cut_num >=1.5):
+        cut_again_start.append((i+1)*2-2)
+        cut_again_end.append((i+1)*2-1)
+        cut_again_num.append(int(cut_num))
+print("cut_again_start: "+str(cut_again_start))
+print("cut_again_end: "+str(cut_again_end))
+print("cut_again_num: "+str(cut_again_num))
+
+
+for i in range(0,len(cut_again_start)):
+    if (i >0):
+        incre_len = (int)((cut_colums[cut_again_end[i]+cut_again_num[i-1]-1]-cut_colums[cut_again_start[i]+cut_again_num[i-1]-1])/cut_again_num[i])
+        # incre_len = (int)((cut_colums[cut_again_end[i]+2*(cut_again_num[i-1]-1)]-cut_colums[cut_again_start[i]+cut_again_num[i-1]-1])/cut_again_num[i])
+        print(incre_len)
+
+    else:
+        incre_len = (int)((cut_colums[cut_again_end[i]]-cut_colums[cut_again_start[i]])/cut_again_num[i])
+        print(incre_len)
+    for j in range(1,cut_again_num[i]):
+        if(i>0):
+            # cut_colums.insert(cut_again_start[i]+j+(cut_again_num[i-1]-1)*2,cut_colums[cut_again_start[i]+cut_again_num[i-1]-1]+j*incre_len)
+            num1 =  cut_colums[ cut_again_start[i] + cut_again_num[i - 1] - 1] + j * incre_len
+            cut_colums.insert(cut_again_start[i]+j+cut_again_num[i-1]-1,cut_colums[cut_again_start[i]+cut_again_num[i-1]-1]+j*incre_len)
+            cut_colums.append(num1)
+            print(str(cut_again_start[i]+j+cut_again_num[i-1]-1) + "     " + str(cut_colums[cut_again_start[i]+cut_again_num[i-1]-1] + j * incre_len))
+        #
+        else:
+            num2 = cut_colums[cut_again_start[i]]+j*incre_len
+            cut_colums.insert(cut_again_start[i]+j,cut_colums[cut_again_start[i]]+j*incre_len)
+            # cut_colums.insert(cut_again_start[i]+j+1,cut_colums[cut_again_start[i]]+j*incre_len)
+            cut_colums.append(num2)
+            print(str(cut_again_start[i]+j)+"     "+str(cut_colums[cut_again_start[i]]+j*incre_len))
+
+cut_colums.sort()
+
+print("cut_cloums: "+str(cut_colums))
+
+if(cut_colums[0]>colums/8):
+    cut_colums.insert(0,cut_colums[1])
+    cut_colums.insert(0,5)
+if((colums- cut_colums[len(cut_colums)-1])>colums/8):
+    cut_colums.insert(len(cut_colums)-1,cut_colums[len(cut_colums)-1])
+    cut_colums.append(colums-5)
+
+print("cut_cloums: "+str(cut_colums))
+
 
 for i in range(1,len(cut_colums),2):
     cv2.imwrite("/Users/Quantum/Desktop/" + str(cut_colums[i-1]) + ":" + str(cut_colums[i]) + ".jpg",
