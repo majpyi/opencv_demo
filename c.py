@@ -125,11 +125,18 @@ cv2.imwrite("/Users/Quantum/Desktop/gray.jpg",gray)
 sum_row = 0
 sum_rows = [0 for n in range(rows)]
 #  横向的投影
+# for x in range(rows):
+#     num=0
+#     for y in range(colums):
+#         if(gray[x,y]==tag):
+#             sum_rows[x]=sum_rows[x]+1
 for x in range(rows):
     num=0
-    for y in range(colums):
+    for y in range((int)(colums/12),(int)(colums*11/12)):
         if(gray[x,y]==tag):
             sum_rows[x]=sum_rows[x]+1
+
+
 print("横向的投影: "+str(sum_rows))
 
 for i in range(rows):
@@ -138,7 +145,6 @@ for i in range(rows):
 tag_row = int(sum_row / rows)
 
 print("mean_sum_rows:  " +  str(tag_row))
-
 
 
 tag_rows=[0 for n in range(rows)]
@@ -159,11 +165,28 @@ rows_copy = sum_rows.copy()
 rows_copy.sort()
 # print(rows_copy)
 
+double = 0
+double_start =0
+double_end = 0
+for i in range((int)(rows/4),(int)(rows*3/4)):
+    if(sum_rows[i]==0 and sum_rows[i+1]!=0):
+        print(" 双排车牌")
+        double =1
+        double_end = i
+    if (sum_rows[i] !=0 and sum_rows[i + 1] == 0):
+        print(" 双排车牌")
+        double = 1
+        double_start = i
 
+print("double_start: "+ str(double_start))
+print("double_end: "+str(double_end))
 
+double_avg = (int)((double_start+double_end)/2)
 
+print("double_avg: "+str(double_avg))
 
-
+cv2.imwrite("/Users/Quantum/Desktop/double_up.jpg",image[range(double_avg+1),:])
+cv2.imwrite("/Users/Quantum/Desktop/double_down.jpg",image[range(double_avg,rows),:])
 
 
 
@@ -374,6 +397,12 @@ for i in range(0,len(list_start)):
 
 print("记录的横向坐标分割点:  "+str(cut_colums))
 
+
+#  下面一部分
+#  处理那些左右两部分的中文文字与八个字符情况下的的分割,还有因为二值化的可能不合理性而缺失的字符
+
+
+#  主要处理因为一个汉字分为左右两个部分,会被判定为两个字符的情况,在这里我们使用判断条件,清除里面的不合理分割点
 tag = 0
 for i in range(1,len(cut_colums)-1,2):
     if(cut_colums[i+1] - cut_colums[i]>=colums/50):
@@ -388,6 +417,11 @@ cut_colums = cut_colums[:1]+cut_colums[tag:]
 
 print("切割坐标 :"+str(cut_colums))
 
+
+
+
+
+#  具体处理那些汉字分为左右两个部分或者是像川字分为三个部分的问题,通过字符的中位数间隔的比例,我们进行处理
 cut_length = []
 for i in range(1,len(cut_colums),2):
     cut_length.append(cut_colums[i]-cut_colums[i-1])
@@ -443,6 +477,10 @@ cut_colums.sort()
 
 print("cut_cloums: "+str(cut_colums))
 
+
+
+
+#  处理那些因为二值化不合理而消失的字符,通过过大的字符间隔判定有字符缺失
 if(cut_colums[0]>colums/8):
     cut_colums.insert(0,cut_colums[1])
     cut_colums.insert(0,5)
@@ -453,6 +491,12 @@ if((colums- cut_colums[len(cut_colums)-1])>colums/8):
 print("cut_cloums: "+str(cut_colums))
 
 
+
+
+
+
+
+#   输出分割之后的字符图像
 for i in range(1,len(cut_colums),2):
     cv2.imwrite("/Users/Quantum/Desktop/" + str(cut_colums[i-1]) + ":" + str(cut_colums[i]) + ".jpg",
          image[:, range(cut_colums[i-1]-3, cut_colums[i] + 1+3)][range(row_start -3, row_end + 1 +3), :])
