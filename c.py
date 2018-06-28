@@ -186,7 +186,58 @@ double_avg = (int)((double_start+double_end)/2)
 print("double_avg: "+str(double_avg))
 
 cv2.imwrite("/Users/Quantum/Desktop/double_up.jpg",image[range(double_avg+1),:])
-cv2.imwrite("/Users/Quantum/Desktop/double_down.jpg",image[range(double_avg,rows),:])
+cv2.imwrite("/Users/Quantum/Desktop/double_down.jpg",image[range((int)(double_avg*7/9),rows),:])
+cv2.imwrite("/Users/Quantum/Desktop/double_up_1.jpg",image[range(double_avg+1),:][:,range((int)(colums*2/10),(int)(colums/2))])
+cv2.imwrite("/Users/Quantum/Desktop/double_up_2.jpg",image[range(double_avg+1),:][:,range((int)(colums/2),(int)(colums*8/10))])
+
+
+
+
+#  对双排车牌的下半部分进行处理,重新进行赋值处理
+if(double==1):
+    image = cv2.imread("/Users/Quantum/Desktop/double_down.jpg")
+    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+    gray = cv2.medianBlur(gray, 3)
+
+    sp = image.shape
+    rows = sp[0]
+    colums = sp[1]
+
+    tag_rows = [0 for n in range(rows)]
+    index1 = (int)(rows / 12)
+    index2 = (int)(rows * (11 / 12))
+    for i in range(index1, index2):
+        if (sum_rows[i] > tag_row - 20):
+            tag_rows[i] = 1
+        else:
+            tag_rows[i] = 0
+    print("横向标记分割: "+str(tag_rows))
+
+    for y in range(colums):
+        num = 0
+        for x in range(rows):
+            if (gray[x, y] > mean_value - 10):
+                gray[x, y] = 255
+                white_num += 1
+
+            else:
+                gray[x, y] = 0
+                black_num += 1
+
+    sum_row = 0
+    sum_rows = [0 for n in range(rows)]
+
+    for x in range(rows):
+        num = 0
+        for y in range((int)(colums / 12), (int)(colums * 11 / 12)):
+            if (gray[x, y] == tag):
+                sum_rows[x] = sum_rows[x] + 1
+
+    print("横向的投影: " + str(sum_rows))
+
+
+
+
 
 
 
