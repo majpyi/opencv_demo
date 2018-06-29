@@ -146,9 +146,18 @@ tag_row = int(sum_row / rows)
 
 print("mean_sum_rows:  " +  str(tag_row))
 
+index1 =0
+for i in range(rows):
+    if(sum_rows[i]>tag_row/2):
+        index1=i-1
+        break
+
+
+
 
 tag_rows=[0 for n in range(rows)]
-index1 = (int)(rows/12)
+# if(index1==0):
+# index1 = (int)(rows/12)
 index2 = (int)(rows*(11/12))
 for i in range(index1,index2):
     if(sum_rows[i]>tag_row-20):
@@ -168,33 +177,42 @@ rows_copy.sort()
 double = 0
 double_start =0
 double_end = 0
+tag1 = 0
+tag2 =0
 for i in range((int)(rows/4),(int)(rows*3/4)):
     if(sum_rows[i]==0 and sum_rows[i+1]!=0):
         print(" 双排车牌")
-        double =1
+        tag1 =1
         double_end = i
     if (sum_rows[i] !=0 and sum_rows[i + 1] == 0):
         print(" 双排车牌")
-        double = 1
+        tag2 = 1
         double_start = i
+if(tag1 and tag2):
+    double=1
 
-print("double_start: "+ str(double_start))
-print("double_end: "+str(double_end))
 
-double_avg = (int)((double_start+double_end)/2)
-
-print("double_avg: "+str(double_avg))
-
-cv2.imwrite("/Users/Quantum/Desktop/double_up.jpg",image[range(double_avg+1),:])
-cv2.imwrite("/Users/Quantum/Desktop/double_down.jpg",image[range((int)(double_avg*7/9),rows),:])
-cv2.imwrite("/Users/Quantum/Desktop/double_up_1.jpg",image[range(double_avg+1),:][:,range((int)(colums*2/10),(int)(colums/2))])
-cv2.imwrite("/Users/Quantum/Desktop/double_up_2.jpg",image[range(double_avg+1),:][:,range((int)(colums/2),(int)(colums*8/10))])
 
 
 
 
 #  对双排车牌的下半部分进行处理,重新进行赋值处理
 if(double==1):
+    print("double_start: " + str(double_start))
+    print("double_end: " + str(double_end))
+
+    double_avg = (int)((double_start + double_end) / 2)
+
+    print("double_avg: " + str(double_avg))
+
+    cv2.imwrite("/Users/Quantum/Desktop/double_up.jpg", image[range(double_avg + 1), :])
+    cv2.imwrite("/Users/Quantum/Desktop/double_down.jpg", image[range((int)(double_avg * 7 / 9), rows), :])
+    cv2.imwrite("/Users/Quantum/Desktop/double_up_1.jpg",
+                image[range(double_avg + 1), :][:, range((int)(colums * 2 / 10), (int)(colums / 2))])
+    cv2.imwrite("/Users/Quantum/Desktop/double_up_2.jpg",
+                image[range(double_avg + 1), :][:, range((int)(colums / 2), (int)(colums * 8 / 10))])
+
+
     image = cv2.imread("/Users/Quantum/Desktop/double_down.jpg")
     gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
     gray = cv2.medianBlur(gray, 3)
@@ -403,7 +421,7 @@ print("终止坐标点: "+str(list_end))
 
 
 
-# 存储分割之后的横向坐标信息
+# 存储分割之后的纵向坐标信息
 cut_colums = []
 # 分开存储字符分割之后的图像
 for i in range(0,len(list_start)):
@@ -446,7 +464,7 @@ for i in range(0,len(list_start)):
         # else:
         #     cv2.imwrite("/Users/Quantum/Desktop/"+str(list1[i]+1)+".jpg", image[:,range(list1[i-2],list1[i+1]+1)][range(row_start+3,row_end+1-3),:] )
 
-print("记录的横向坐标分割点:  "+str(cut_colums))
+print("记录的纵向坐标分割点:  "+str(cut_colums))
 
 
 #  下面一部分
@@ -542,9 +560,34 @@ if((colums- cut_colums[len(cut_colums)-1])>colums/8):
 print("cut_cloums: "+str(cut_colums))
 
 
+#  当铆钉接近字符的时候,会造成字符的联通,铆钉的位置一般在
+#  第二个字符与第三个字符之间,和第五个与第六个之间
+cut1 = 0
+cut2 = 0
+if(cut_colums[3]==cut_colums[4]):
+    cut1 = cut_colums[3]
+
+if (cut_colums[11] == cut_colums[12]):
+    cut2 =cut_colums[11]
+
+if(cut1):
+    while cut1 in cut_colums:
+        cut_colums.remove(cut1)
+
+if(cut2):
+    while cut1 in cut_colums:
+        cut_colums.remove(cut2)
+
+
+#  判断剪完之后是不是仍然包括中心的小点
 
 
 
+if(cut_colums[3]-cut_colums[2]>median_length*1.2):
+    cut_colums[3]=cut_colums[2]+(int)(median_length*1.2)
+
+
+print("cut_cloums: "+str(cut_colums))
 
 
 #   输出分割之后的字符图像
