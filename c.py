@@ -562,21 +562,22 @@ print("cut_cloums: "+str(cut_colums))
 
 #  当铆钉接近字符的时候,会造成字符的联通,铆钉的位置一般在
 #  第二个字符与第三个字符之间,和第五个与第六个之间
-cut1 = 0
-cut2 = 0
-if(cut_colums[3]==cut_colums[4]):
-    cut1 = cut_colums[3]
+if(double!=1):
+    cut1 = 0
+    cut2 = 0
+    if(cut_colums[3]==cut_colums[4]):
+        cut1 = cut_colums[3]
 
-if (cut_colums[11] == cut_colums[12]):
-    cut2 =cut_colums[11]
+    if (cut_colums[11] == cut_colums[12]):
+        cut2 =cut_colums[11]
 
-if(cut1):
-    while cut1 in cut_colums:
-        cut_colums.remove(cut1)
+    if(cut1):
+        while cut1 in cut_colums:
+            cut_colums.remove(cut1)
 
-if(cut2):
-    while cut1 in cut_colums:
-        cut_colums.remove(cut2)
+    if(cut2):
+        while cut1 in cut_colums:
+            cut_colums.remove(cut2)
 
 
 #  判断剪完之后是不是仍然包括中心的小点
