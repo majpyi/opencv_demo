@@ -143,7 +143,7 @@ for file in files:
     #             sum_rows[x]=sum_rows[x]+1
     for x in range(rows):
         num=0
-        for y in range((int)(colums/12),(int)(colums*11/12)):
+        for y in range((int)(colums/4),(int)(colums*3/4)):
             if(gray[x,y]==tag):
                 sum_rows[x]=sum_rows[x]+1
 
@@ -157,19 +157,28 @@ for file in files:
 
     print("mean_sum_rows:  " +  str(tag_row))
 
+    # 上方的起始点
     index1 =0
     for i in range(rows):
-        if(sum_rows[i]>tag_row/2):
+        #  判断可能因为边框的选取多出来的黑色区域,所以加上了sum_sum[i]< rows*3/4 ,这个判断条件
+        if(sum_rows[i]>tag_row/2 and sum_rows[i]< colums*3/4):
             index1=i-1
             break
-
-
 
 
     tag_rows=[0 for n in range(rows)]
     # if(index1==0):
     # index1 = (int)(rows/12)
+
+    # 下方的起始点
     index2 = (int)(rows*(11/12))
+    for i in range(rows-1,-1,-1):
+        #  判断可能因为边框的选取多出来的黑色区域,所以加上了sum_sum[i]< rows*3/4 ,这个判断条件
+        if(sum_rows[i]>tag_row/2 and sum_rows[i]< colums*3/4):
+            index2=i-1
+            break
+
+
     for i in range(index1,index2):
         if(sum_rows[i]>tag_row-20):
             tag_rows[i]=1
@@ -199,6 +208,9 @@ for file in files:
             print(" 双排车牌")
             tag2 = 1
             double_start = i
+        if(tag1 and tag2):
+            break
+
     if(tag1 and tag2):
         double=1
 
@@ -217,7 +229,7 @@ for file in files:
         print("double_avg: " + str(double_avg))
 
         cv2.imwrite("/Users/Quantum/Desktop/double_up.jpg", image[range(double_avg + 1), :])
-        cv2.imwrite("/Users/Quantum/Desktop/double_down.jpg", image[range((int)(double_avg * 7 / 9), rows), :])
+        cv2.imwrite("/Users/Quantum/Desktop/double_down.jpg", image[range((int)(double_avg*13/12), rows), :])
         # cv2.imwrite("/Users/Quantum/Desktop/double_up_1.jpg",
         #             image[range(double_avg + 1), :][:, range((int)(colums * 2 / 10), (int)(colums / 2))])
         # cv2.imwrite("/Users/Quantum/Desktop/double_up_2.jpg",
@@ -244,8 +256,28 @@ for file in files:
         colums = sp[1]
 
         tag_rows = [0 for n in range(rows)]
-        index1 = (int)(rows / 12)
+
+        # 上方的起始点
+        index1 = 0
+        for i in range(rows):
+            #  判断可能因为边框的选取多出来的黑色区域,所以加上了sum_sum[i]< rows*3/4 ,这个判断条件
+            if (sum_rows[i] > tag_row / 2 and sum_rows[i] < colums * 3 / 4):
+                index1 = i - 1
+                break
+
+        tag_rows = [0 for n in range(rows)]
+        # if(index1==0):
+        # index1 = (int)(rows/12)
+
+        # 下方的起始点
         index2 = (int)(rows * (11 / 12))
+        for i in range(rows - 1, -1, -1):
+            #  判断可能因为边框的选取多出来的黑色区域,所以加上了sum_sum[i]< rows*3/4 ,这个判断条件
+            if (sum_rows[i] > tag_row / 2 and sum_rows[i] < colums * 3 / 4):
+                index2 = i - 1
+
+
+
         for i in range(index1, index2):
             if (sum_rows[i] > tag_row - 20):
                 tag_rows[i] = 1
@@ -380,10 +412,22 @@ for file in files:
     tag_colum = int(sum_colum/colums)
     print("mean_sum_colum:  " +  str(tag_colum))
 
+    #  左边第一个车牌字符内部点
+    index1 = (int)(colums/25)
+    for i in range(colums):
+        if(sum_colums[i]<rows*3/4 and sum_colums[i]>tag_colum/2):
+            index1 = i-1
+            break
+
+    #  右边第一个车牌字符内部点
+    index2 = (int)(colums*(24/25))
+    for i in range(colums-1,-1,-1):
+        if (sum_colums[i] < rows * 3 / 4 and sum_colums[i] > tag_colum / 2):
+            index2 = i - 1
+            break
 
     tag_colums=[0 for n in range(colums)]
-    index1 = (int)(colums/25)
-    index2 = (int)(colums*(24/25))
+
     for i in range(index1,index2):
         if(sum_colums[i]>5):
             tag_colums[i]=1
